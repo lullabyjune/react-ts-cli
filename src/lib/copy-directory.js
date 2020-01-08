@@ -2,9 +2,9 @@ const fs = require('fs')
 const path = require('path')
 const glob = require('glob')
 
-const { isDirectory } = require('./is-directory')
+const { isDirectory, rmDirectory } = require('./directory-utils')
 
-const copyR = (dir, to) => {
+const copyR = (dir, to, igonreList) => {
   const list = glob.sync(`${dir}/*`, {
     dot: true
   })
@@ -13,9 +13,16 @@ const copyR = (dir, to) => {
     let lastPath = name.split('/').pop()
     let nextTo = path.join(to, lastPath)
 
+    if (igonreList.includes(name)) {
+      rmDirectory(name)
+
+      continue
+    }
+
     if (isDirectory(name)) {
       fs.mkdirSync(nextTo)
-      copyR(name, nextTo)
+
+      copyR(name, nextTo, igonreList)
 
       continue
     }

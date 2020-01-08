@@ -8,17 +8,24 @@ const ora = require('ora')
 const chalk = require('chalk')
 const logSymbols = require('log-symbols')
 
-const { isDirectory, copyR, downloadGitrRepo: download, generatorPackageJson } = require('../lib')
+const { 
+  isDirectory,
+  copyR,
+  downloadGitrRepo: download,
+  generatorPackageJson,
+  igonreFileList,
+  igonreFileDict
+} = require('../lib')
 
 Commander
   .option('-y --yes', 'init prompt by default')
-  .option('-r --router', 'init react-router')
-  //  TODO: add router
+  .option('-r --react-router', 'init with react-router')
+  .option('-s --styled-components', 'init with styled-components')
 
 Commander.usage('<project-name>').parse(process.argv)
 Commander.parse(process.argv)
 
-let { yes } = Commander
+let { yes, reactRouter, styledComponents } = Commander
 
 let projectName = Commander.args[0]
 
@@ -53,12 +60,14 @@ const promptDetails = () => {
       resolve({
         projectVersion: '1.0.0',
         projectDescription: 'a react + typescript project',
+        useRouter: reactRouter || false,
+        useStyledComponents: styledComponents || false
       })
 
       return
     }
 
-    inquirer.prompt([
+    let baseInquirerQuestions = [
       {
         name: 'projectVersion',
         message: 'the version of your project',
@@ -68,7 +77,27 @@ const promptDetails = () => {
         message: 'description for your project',
         default: 'a react + typescript project...'
       }
-    ]).then(ans => resolve({...ans}))
+    ]
+
+    typeof reactRouter !== 'boolean' && baseInquirerQuestions.push(
+      {
+        type: 'confirm',
+        name: 'useRouter',
+        message: 'init router in your project? (default to false.',
+        default: false
+      }
+    )
+
+    typeof styledComponents !== 'boolean' && baseInquirerQuestions.push(
+      {
+        type: 'confirm',
+        name: 'useStyledComponents',
+        message: 'init styled-components in your project? (default to false',
+        default: false
+      }
+    )
+
+    inquirer.prompt(baseInquirerQuestions).then(ans => resolve({...ans}))
       .catch(reject)
   })
 }
@@ -92,10 +121,18 @@ const initDir = (dir) => {
           
           const spinnerCopy = ora('is copying template files to local...')
 
+          let igonreList = Object.keys(igonreFileDict).reduce((list, key) => {
+            if (ans[key] === false) {
+              list.push(...igonreFileDict[key])
+            }
+
+            return list
+          }, [...igonreFileList]).map(filePath => path.resolve(process.cwd(), path.join('.', file, filePath)))
+
           try {
             spinnerCopy.start()
 
-            copyR(downloadPath, targetPath)
+            copyR(downloadPath, targetPath, igonreList)
 
             spinnerCopy.succeed()
           } catch (e) {

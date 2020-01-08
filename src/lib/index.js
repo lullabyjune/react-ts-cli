@@ -1,6 +1,7 @@
 module.exports = {
   ...require('./copy-directory'),
   ...require('./download'),
-  ...require('./is-directory'),
-  ...require('./generator')
+  ...require('./directory-utils'),
+  ...require('./generator'),
+  ...require('./ignore')
 }

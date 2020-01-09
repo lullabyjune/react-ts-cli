@@ -1,6 +1,6 @@
 {
   "name": "ts-react-creator",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "a personal cli to init react + ts project...",
   "main": "index.js",
   "scripts": {

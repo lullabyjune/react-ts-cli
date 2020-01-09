@@ -6,7 +6,7 @@ const downloadGitrRepo = (filePath) => {
   filePath = path.join(filePath || '.', '.download-temp')
 
   return new Promise((resolve, reject) => {
-    const url = 'lullabyjune/template-for-cli#master'
+    const url = 'https://github.com:lullabyjune/template-for-cli#master'
     const spinner = ora(`is downloading project template... template url is: ${url}`)
 
     spinner.start()
